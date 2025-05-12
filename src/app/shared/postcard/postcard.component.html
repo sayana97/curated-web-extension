@@ -1,0 +1,15 @@
+<div class="post-card">
+    <div class="post-header">
+      <img [src]="post.userAvatar" alt="Avatar" class="avatar" />
+      <div>
+        <strong>{{ post.username }}</strong>
+      </div>
+    </div>
+    <p>{{ post.content }}</p>
+    <div class="post-actions">
+      <button (click)="likePost()">❤️ {{ post.likes }}</button>
+      <button (click)="repost()">🔁</button>
+      <button (click)="comment()">💬</button>
+    </div>
+  </div>
+  

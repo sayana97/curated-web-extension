@@ -178,7 +178,7 @@
 </style>
 
 <main class="main">
-  <div class="content">
+  <!-- <div class="content">
     <div class="left-side">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -321,7 +321,42 @@
         </a>
       </div>
     </div>
-  </div>
+  </div> -->
+
+  <div class="app-container">
+<div class="login-container">
+
+    <header class="app-header">
+        <h1>Curated Web</h1>
+    </header>
+
+    <nav class="app-navigation">
+        <ul>
+            <li><a routerLink="home">Home</a></li>
+            <li><a routerLink="/notifications">Notifications</a></li>
+            <li><a routerLink="/messages">Messages</a></li>
+            <li><a routerLink="/profile">Profile</a></li>
+        </ul>
+    </nav>
+
+    <!-- <button (click)="loginWithMastodon()">Login with Mastodon</button> -->
+    <!-- login.component.html -->
+  <button (click)="loginWithMastodon()" class="login-btn">
+    Login Here
+  </button>
+</div>
+
+
+    <main class="app-content">
+        <router-outlet></router-outlet> <!-- This is where routed components will be displayed -->
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2025 Curated Web. All rights reserved.</p>
+    </footer>
+</div>
+
+
 </main>
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->

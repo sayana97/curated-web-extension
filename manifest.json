@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Offline Web App",
+  "version": "1.0",
+  "description": "Runs a local web app inside the extension",
+  "action": {
+  },
+  "permissions": ["activeTab", "scripting", "tabs"],
+  "web_accessible_resources": [
+    {
+      "resources": ["sidebar.html", "sidebar.css", "sidebar.js", "curated-web-extension/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": ["<all_urls>", "https://mastodon.social/*"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

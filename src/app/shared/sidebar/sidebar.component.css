@@ -1,0 +1,22 @@
+.sidebar {
+    width: 200px;
+    height: 100vh;
+    background: #f5f8fa;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+  }
+  
+  .sidebar a {
+    text-decoration: none;
+    padding: 10px;
+    display: block;
+    color: black;
+  }
+  
+  .sidebar button {
+    margin-top: auto;
+    background: red;
+    color: white;
+  }
+  

@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Local Web App Launcher",
+  "version": "1.0",
+  "description": "Opens a local web app inside a Chrome extension",
+  "action": {
+    "default_popup": "sidebar.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": ["tabs"],
+  "web_accessible_resources": [
+    {
+      "resources": ["*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

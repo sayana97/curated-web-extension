@@ -1,0 +1,110 @@
+/* Resetting default margin and padding */
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* Sidebar container with fixed position */
+.sidebar-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  background-color: white;
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures the content and bottom items are properly spaced */
+}
+
+/* Main content area inside the sidebar */
+.sidebar-content {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: auto; /* Content becomes scrollable */
+}
+
+/* Sidebar header */
+h2 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Feed section */
+#feed {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Comment box */
+textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+/* Publish button */
+button {
+  width: 100%;
+  padding: 14px;
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+  background-color: #005fa3;
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Sidebar toggle button */
+#mastodon-extension-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  border: none;
+  z-index: 999999;
+  transition: right 0.3s ease;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+  background: white;
+}
+
+/* Toggle button styles */
+#mastodon-toggle-btn {
+  position: fixed;
+  top: 100px;
+  right: 10px;
+  z-index: 1000000;
+  background: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 18px;
+}

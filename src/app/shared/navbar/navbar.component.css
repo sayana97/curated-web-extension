@@ -1,0 +1,19 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #1da1f2;
+    color: white;
+  
+    .search-bar input {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+  
+    .user-actions button {
+      margin-left: 10px;
+    }
+  }
+  

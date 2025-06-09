@@ -1,47 +1,102 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Extension Sidebar</title>
-  <link rel="stylesheet" href="sidebar.scss">
-</head>
-<body>
-  <div class="sidebar-content">
-    <h2>Mastodon Extension</h2>
-    <textarea id="postInput" placeholder="Write your post here..."></textarea>
-    <button id="postButton">Publish</button>
-    <div id="feed"></div>
-  </div>
-  <script src="sidebar.js"></script>
-</body>
-</html> -->
-
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Extension Sidebar</title>
-  <link rel="stylesheet" href="sidebar.css">
+  <link rel="stylesheet" href="sidebar.css" />
 </head>
+
 <body>
   <div class="sidebar-container">
-    <!-- Close button (optional, if you want a way to close the sidebar) -->
-    <!-- <button id="closeSidebarBtn" class="close-btn">❌</button> -->
-
     <div class="sidebar-content">
-      <h2>Mastodon Extension</h2>
-      <div id="feed"></div>
+      <h3 class="main_heading">Your Curated Web</h3>
+
+      <!-- Toggleable container -->
+      <div class="page-actions">
+        <h2 id="toggleHeader" style="cursor:pointer;">
+          <span id="toggle-icon">▼</span> Modify Current Page
+        </h2>
+
+        <div id="actionsBody">
+          <div class="button-grid">
+            <button id="highlightBtn">Highlight Text</button>
+            <button id="hideImagesBtn">Hide Images</button>
+            <button id="addBannerBtn">Add Banner</button>
+            <button id="increaseFontBtn">Increase Font</button>
+          </div>
+          <button id="fetchSelectionButton" class="fetch-button">Use Selected Text to Comment</button>
+          <div id="selectedTextBox" class="selected-text-box" style="display: none;">
+            <strong>Commenting on:</strong>
+            <p id="selectedText"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Dropdown -->
+      <div id="feedFilterContainer">
+        <label for="postFilter">Filter Posts:</label>
+        <select id="postFilter">
+          <option value="all">All Posts</option>
+          <option value="following">Posts from People You Follow</option>
+          <!-- <option value="favorites">Your Favorites</option>
+          <option value="trending">Trending</option> -->
+          <!-- <option value="extension">Made via Extension</option> -->
+          <option value="others">Other Posts</option>
+        </select>
+      </div>
+
+      <!-- Feed with Sections -->
+      <div id="feed">
+        <h3>Posts from People You Follow</h3>
+        <div class="section" id="section-following"></div>
+
+        <!-- <h3>Your Favorites</h3>
+        <div class="section" id="section-favorites"></div>
+
+        <h3>Trending</h3>
+        <div class="section" id="section-trending"></div> -->
+        <div id="commentHistory" class="comment-history" style="margin-top: 20px;">
+          <h3>Posts Made via Extension</h3>
+          <!-- Comments will be appended here -->
+        </div>
+        <!-- 
+        <h3>Made via Extension</h3>
+        <div class="section" id="section-extension"></div> -->
+
+        <h3>Other Posts</h3>
+        <div class="section" id="section-others"></div>
+      </div>
     </div>
 
     <!-- Comment Box and Publish Button at the bottom -->
-    <textarea id="postInput" placeholder="Write your post here..."></textarea>
-    <button id="postButton">Publish</button>
+    <div class="comment-box">
+      <textarea id="postInput" placeholder="Write your post here..."></textarea>
+      <button id="postButton">Publish</button>
+    </div>
   </div>
 
-  <script src="sidebar.js"></script>
-</body>
-</html>
+  <!-- Template for a Post -->
+  <template id="postTemplate">
+    <div class="post" data-category="">
+      <div class="post-header">
+        <p class="post-text"></p>
+        <small class="post-meta"></small>
+      </div>
 
+      <div class="media-container"></div>
+
+      <div class="post-actions">
+        <button class="favorite-btn" title="Mark as Favorite">⭐</button>
+        <span class="post-rank">⬆️ Rank: <span class="rank-score">0</span></span>
+      </div>
+    </div>
+  </template>
+
+  <script src="sidebar.js"></script>
+  <script src="sidebar_actions.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,22 @@
+{
+  "posts": [
+    {
+      "id": "uuid1",
+      "text": "Hello world!",
+      "media": "",
+      "userId": "user123",
+      "likes": 0,
+      "likedBy": [],
+      "favoritedBy": [],
+      "repostedBy": [],
+      "followers": [],
+      "authorUsername": "John"
+    }
+  ],
+  "users": {
+    "user123": {
+      "username": "John",
+      "followers": []
+    }
+  }
+}

@@ -34,67 +34,68 @@
         </div>
       </div>
 
-      <!-- Filter Dropdown -->
-      <div id="feedFilterContainer">
-        <label for="postFilter">Filter Posts:</label>
-        <select id="postFilter">
-          <option value="all">All Posts</option>
-          <option value="following">Posts from People You Follow</option>
-          <!-- <option value="favorites">Your Favorites</option>
-          <option value="trending">Trending</option> -->
-          <!-- <option value="extension">Made via Extension</option> -->
-          <option value="others">Other Posts</option>
-        </select>
+      <!-- Tabs for Posts / Following / Followers -->
+      <div class="tabs">
+        <button class="tabBtn active" data-target="posts">Posts</button>
+        <button class="tabBtn" data-target="curated" >For You</button>
+        <button class="tabBtn" data-target="following">Following</button>
+        <button class="tabBtn" data-target="followers">Followers</button>
       </div>
 
-      <!-- Feed with Sections -->
-      <div id="feed">
-        <h3>Posts from People You Follow</h3>
-        <div class="section" id="section-following"></div>
+      <div id="dynamicSectionContainer">
+        <div class="section active" id="section-posts">
+          <div id="posts">
+            <label for="postFilter">Filter posts:</label>
+            <select id="postFilter">
+              <option value="all" selected>All Posts</option>
+              <option value="followed">Posts from People You Follow</option>
+              <option value="favorites">Favorited Posts</option>
+              <option value="extension">Posts via Extension</option>
+            </select>
 
-        <!-- <h3>Your Favorites</h3>
-        <div class="section" id="section-favorites"></div>
+            <h4 id="f1">Posts from People You Follow</h4>
+            <div id="postsFromFollowed" class="post-section"></div>
 
-        <h3>Trending</h3>
-        <div class="section" id="section-trending"></div> -->
-        <div id="commentHistory" class="comment-history" style="margin-top: 20px;">
-          <h3>Posts Made via Extension</h3>
-          <!-- Comments will be appended here -->
+            <h4 id="f2">Your Favorited Posts</h4>
+            <div id="favoritedPosts" class="post-section"></div>
+
+            <h4 id="f3">Posts Made via Extension</h4>
+            <div id="extensionPosts" class="post-section"></div>
+
+            <h4 id="f4">Other Relevant Posts</h4>
+            <div id="otherPosts" class="post-section"></div>
+          </div>
+
         </div>
-        <!-- 
-        <h3>Made via Extension</h3>
-        <div class="section" id="section-extension"></div> -->
 
-        <h3>Other Posts</h3>
-        <div class="section" id="section-others"></div>
+        <div class="section" id="section-following">
+          <div id="followingContent"></div>
+        </div>
+
+        <div class="section" id="section-followers">
+          <div id="followersContent"></div>
+        </div>
+
+        <div id="section-curated" class="section">
+          <div id="curatedContent"></div>
+        </div>
+        
+
+
       </div>
     </div>
-
-    <!-- Comment Box and Publish Button at the bottom -->
+    <div id="errorMessage" style="color:red; display:none;"></div>
+    <div id="loadingIndicator" style="display:none;">Loading...</div>
+    <div id="notificationBanner" style="display:none; background:#ffc; padding:10px; cursor:pointer;"></div>
+    <!-- Comment Box always visible at the bottom -->
     <div class="comment-box">
       <textarea id="postInput" placeholder="Write your post here..."></textarea>
       <button id="postButton">Publish</button>
     </div>
   </div>
-
-  <!-- Template for a Post -->
-  <template id="postTemplate">
-    <div class="post" data-category="">
-      <div class="post-header">
-        <p class="post-text"></p>
-        <small class="post-meta"></small>
-      </div>
-
-      <div class="media-container"></div>
-
-      <div class="post-actions">
-        <button class="favorite-btn" title="Mark as Favorite">⭐</button>
-        <span class="post-rank">⬆️ Rank: <span class="rank-score">0</span></span>
-      </div>
-    </div>
-  </template>
-
-  <script src="sidebar.js"></script>
+  <script type="module" src="sidebar.js"></script>
+  <script src="posts_tab.js"></script>
+  <script src="sidebar_tabs.js"></script>
   <script src="sidebar_actions.js"></script>
 
 </body>

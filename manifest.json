@@ -36,6 +36,7 @@
         "sidebar.css",
         "sidebar.js",
         "sidebar_tabs.js",
+        "posts_tab.js",
         "sidebar_actions.js",
         "curated-web-extension/*"
       ],

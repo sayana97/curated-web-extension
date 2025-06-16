@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     highlightBtn.addEventListener('click', () => {
       window.parent.postMessage({ source: 'mastodon-sidebar', action: 'highlightSelection' }, '*');
     });
+    
   }
 
   if (hideImagesBtn) {
@@ -52,23 +53,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const postFilter = document.getElementById('postFilter');
-  if (postFilter) {
-    postFilter.addEventListener('change', () => {
-      const selectedValue = postFilter.value;
-      const sections = {
-        following: document.getElementById('section-following'),
-        favorites: document.getElementById('section-favorites'),
-        trending: document.getElementById('section-trending'),
-        extension: document.getElementById('section-extension'),
-        others: document.getElementById('section-others')
-      };
-
-      for (const key in sections) {
-        if (sections[key]) {
-          sections[key].parentElement.style.display = (selectedValue === 'all' || selectedValue === key) ? 'block' : 'none';
-        }
-      }
-    });
-  }
 });

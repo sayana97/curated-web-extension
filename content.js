@@ -2,6 +2,154 @@
   const existingSidebar = document.getElementById('mastodon-extension-sidebar');
   if (existingSidebar) return;
 
+  // ========== Style for Highlights ==========
+  const style = document.createElement('style');
+  style.textContent = `
+    mark.custom-highlight {
+      background-color: yellow;
+      color: black;
+      border-radius: 2px;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ========== Utils ==========
+  function normalize(str) {
+    return str.replace(/\s+/g, ' ').trim();
+  }
+
+  function getNormalizedUrl() {
+    const url = new URL(window.location.href);
+    // Remove trailing slash in pathname for normalization
+    const pathname = url.pathname.replace(/\/$/, '');
+    return `${url.origin}${pathname}`;
+  }
+
+  // ========== IndexedDB Helpers for Banner Persistence ==========
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('mastodonExtensionDB', 1);
+      request.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('banners')) {
+          db.createObjectStore('banners', { keyPath: 'url' });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = e => reject(e.target.error);
+    });
+  }
+
+  async function addBannerUrl(url) {
+    try {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('banners', 'readwrite');
+        const store = tx.objectStore('banners');
+        store.put({ url });
+        tx.oncomplete = () => {
+          console.log('[Banner] URL saved:', url);
+          resolve();
+        };
+        tx.onerror = e => {
+          console.error('[Banner] Error saving URL:', e);
+          reject(tx.error);
+        };
+        tx.onabort = e => {
+          console.error('[Banner] Transaction aborted:', e);
+          reject(tx.error);
+        };
+      });
+    } catch (err) {
+      console.error('[Banner] IndexedDB error:', err);
+    }
+  }
+
+  async function hasBannerUrl(url) {
+    try {
+      const db = await openDB();
+      const tx = db.transaction('banners', 'readonly');
+      const store = tx.objectStore('banners');
+      return new Promise((resolve) => {
+        const request = store.get(url);
+        request.onsuccess = () => resolve(!!request.result);
+        request.onerror = () => resolve(false);
+      });
+    } catch (err) {
+      console.error('[Banner] IndexedDB error:', err);
+      return false;
+    }
+  }
+
+  // ========== Highlight Logic ==========
+  function highlightAllMatches(container, text) {
+    if (!text) return;
+    const normalizedText = normalize(text);
+    if (!normalizedText) return;
+
+    const treeWalker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    const re = new RegExp(normalizedText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+    while (treeWalker.nextNode()) {
+      const node = treeWalker.currentNode;
+      if (node.parentNode && node.parentNode.tagName === 'MARK') continue;
+
+      if (re.test(node.textContent)) {
+        const parent = node.parentNode;
+        const frag = document.createDocumentFragment();
+        let lastIndex = 0;
+
+        node.textContent.replace(re, (match, index) => {
+          const before = node.textContent.slice(lastIndex, index);
+          const mark = document.createElement('mark');
+          mark.className = 'custom-highlight';
+          mark.textContent = match;
+
+          if (before) frag.appendChild(document.createTextNode(before));
+          frag.appendChild(mark);
+          lastIndex = index + match.length;
+        });
+
+        const after = node.textContent.slice(lastIndex);
+        if (after) frag.appendChild(document.createTextNode(after));
+
+        parent.replaceChild(frag, node);
+      }
+    }
+  }
+
+  function saveAndHighlightSelection() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedText = normalize(selection.toString());
+    if (!selectedText) return;
+
+    chrome.storage.sync.get('highlightedItems', (result) => {
+      let highlights = result.highlightedItems || [];
+      highlights.push({ text: selectedText, url: getNormalizedUrl() });
+      chrome.storage.sync.set({ highlightedItems: highlights }, () => {
+        console.log('[Highlight] Saved selection:', selectedText);
+      });
+    });
+
+    const mark = document.createElement('mark');
+    mark.className = 'custom-highlight';
+
+    try {
+      range.surroundContents(mark);
+    } catch (e) {
+      const selectedString = selection.toString();
+      range.deleteContents();
+      mark.textContent = selectedString;
+      range.insertNode(mark);
+    }
+
+    selection.removeAllRanges();
+  }
+
+  // ========== Sidebar UI ==========
   const sidebar = document.createElement('iframe');
   sidebar.id = 'mastodon-extension-sidebar';
   sidebar.src = chrome.runtime.getURL('sidebar.html');
@@ -38,7 +186,6 @@
 
   let sidebarOpen = false;
   let fontSizeLevel = 0;
-  // let darkModeEnabled = false; // Uncomment to use dark mode toggle
 
   toggleBtn.onclick = () => {
     sidebarOpen = !sidebarOpen;
@@ -48,13 +195,15 @@
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === 'GET_SELECTION') {
-      const selectedText = window.getSelection().toString();
-      sendResponse({ selection: selectedText });
+      sendResponse({ selection: window.getSelection().toString() });
+    } else if (request.type === 'HIGHLIGHT_SELECTION') {
+      saveAndHighlightSelection();
     }
     return true;
   });
 
-  window.addEventListener('message', event => {
+  // ========== Message Handling from Sidebar ==========
+  window.addEventListener('message', async event => {
     if (!event.data || event.data.source !== 'mastodon-sidebar') return;
 
     const { action } = event.data;
@@ -63,24 +212,9 @@
         document.querySelectorAll('header, h1, h2').forEach(el => el.style.display = 'none');
         break;
 
-      // Uncomment to use dark mode toggle
-      /*
-      case 'toggleDarkMode':
-        darkModeEnabled = !darkModeEnabled;
-        if (darkModeEnabled) {
-          document.body.style.backgroundColor = '#121212';
-          document.body.style.color = '#e0e0e0';
-        } else {
-          document.body.style.backgroundColor = '';
-          document.body.style.color = '';
-        }
-        break;
-      */
-
       case 'increaseFont':
         fontSizeLevel++;
-        const newSize = 100 + fontSizeLevel * 10;
-        document.body.style.fontSize = newSize + '%';
+        document.body.style.fontSize = `${100 + fontSizeLevel * 10}%`;
         break;
 
       case 'hideImages':
@@ -88,52 +222,108 @@
         break;
 
       case 'highlightSelection':
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          const selectedText = selection.toString();
-
-          // Save the highlighted text and offset
-          const highlightData = {
-            text: selectedText,
-            timestamp: Date.now()
-          };
-
-          // Save to localStorage (can also use chrome.storage)
-          let highlights = JSON.parse(localStorage.getItem('highlights') || '[]');
-          highlights.push(highlightData);
-          localStorage.setItem('highlights', JSON.stringify(highlights));
-
-          // Apply highlight visually
-          const span = document.createElement('span');
-          span.style.backgroundColor = 'yellow';
-          span.textContent = selectedText;
-          range.deleteContents();
-          range.insertNode(span);
-        }
+        saveAndHighlightSelection();
         break;
 
-
       case 'addBanner':
-        const banner = document.createElement('div');
-        banner.textContent = '🚀 This page was modified by your extension!';
-        banner.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          padding: 10px;
-          background: #ff9800;
-          color: white;
-          font-weight: bold;
-          text-align: center;
-          z-index: 99999;
-        `;
-        document.body.prepend(banner);
+        addBannerToPage();
+        const normUrl = getNormalizedUrl();
+        await addBannerUrl(normUrl);
         break;
 
       default:
         console.warn('Unknown action from sidebar:', action);
     }
   });
+
+  // ========== Banner ==========
+  function addBannerToPage() {
+    if (document.getElementById('mastodon-banner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'mastodon-banner';
+    banner.textContent = '🚀 This page was modified by your extension!';
+    banner.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px;
+      background: #ff9800;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      z-index: 99999;
+    `;
+    document.body.prepend(banner);
+    console.log('[Banner] Added to page');
+  }
+
+  // ========== Observe Banner Removal ==========
+  function observeBannerRemoval() {
+    const observer = new MutationObserver(() => {
+      if (!document.getElementById('mastodon-banner')) {
+        const normUrl = getNormalizedUrl();
+        hasBannerUrl(normUrl).then(hasBanner => {
+          if (hasBanner) {
+            console.log('[Banner] Banner removed, re-adding...');
+            addBannerToPage();
+          }
+        });
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // ========== Restore Highlights + Banner ==========
+  async function restorePageModifications() {
+    const normUrl = getNormalizedUrl();
+    console.log('[Restore] Checking banner for URL:', normUrl);
+    if (await hasBannerUrl(normUrl)) {
+      addBannerToPage();
+    } else {
+      console.log('[Restore] No banner for this URL');
+    }
+
+    chrome.storage.sync.get('highlightedItems', (result) => {
+      const savedHighlights = result.highlightedItems || [];
+      savedHighlights.forEach(({ text, url }) => {
+        if (url === normUrl) {
+          console.log('[Restore] Restoring highlight:', text);
+          highlightAllMatches(document.body, text);
+        }
+      });
+    });
+  }
+
+  // ========== SPA URL Change Detection ==========
+  let lastUrl = location.href;
+  function detectUrlChange() {
+    if (location.href !== lastUrl) {
+      console.log('[SPA] URL changed:', location.href);
+      lastUrl = location.href;
+      restorePageModifications();
+    }
+  }
+  new MutationObserver(detectUrlChange).observe(document, { subtree: true, childList: true });
+
+  // ========== Initialize ==========
+  window.addEventListener('DOMContentLoaded', async () => {
+  // Delay a bit to let page settle
+  setTimeout(async () => {
+    // Manually add banner URL for the Wikipedia page once per session
+    const manualUrl = 'https://en.wikipedia.org/wiki/Pseudastacus';
+    const normUrl = getNormalizedUrl();
+
+    // If current normalized URL matches manual URL (normalize both)
+    if (normUrl === manualUrl.replace(/\/$/, '')) {
+      console.log('[Manual] Adding banner URL manually for:', manualUrl);
+      await addBannerUrl(manualUrl);  // Save to IndexedDB
+    }
+
+    restorePageModifications();
+    observeBannerRemoval();
+  }, 800);
+});
+
 })();
